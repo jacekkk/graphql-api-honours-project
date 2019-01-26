@@ -1,0 +1,90 @@
+const { buildSchema } = require('graphql');
+
+module.exports = buildSchema(`
+type Enrolment {
+    _id: ID!
+    course: Course!
+    learner: Learner!
+    progress: Int
+    createdAt: String!
+    updatedAt: String!
+}
+
+type Learner {
+    _id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String
+    age: Int
+    enrolments: [Enrolment!]
+}
+
+type Course {
+    _id: ID!
+    title: String!
+    description: String!
+    date: String!
+    location: String!
+}
+
+input LearnerInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+    age: Int
+}
+
+input CourseInput {
+    title: String!
+    description: String!
+    date: String!
+    location: String!
+}
+
+input EnrolmentInput {
+    courseId: ID!
+    learnerId: ID!
+    progress: Int
+}
+
+input FilterInput {
+    field: String!
+    operator: Operators!
+    value: String!
+}
+
+input SortInput {
+    field: String!
+    direction: Direction!
+}
+
+enum Operators {
+    EQUALS
+    CONTAINS
+}
+
+enum Direction {
+    ASC
+    DESC
+}
+
+type RootQuery {
+    learners(filter: FilterInput, sort: SortInput): [Learner!]!
+    courses: [Course!]!
+    enrolments: [Enrolment!]!
+}
+
+type RootMutation {
+    createLearner(learnerInput: LearnerInput): Learner!
+    createCourse(courseInput: CourseInput): Course!
+    enrolLearner(enrolmentInput: EnrolmentInput): Enrolment!
+    cancelEnrolment(enrolmentId: ID!): Course!
+}
+
+schema {
+    query: RootQuery 
+    mutation: RootMutation
+}
+`)
