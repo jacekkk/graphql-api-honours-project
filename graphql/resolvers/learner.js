@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const Learner = require('../../models/learner');
 const sort = require('../../helpers/sort');
+const { transformLearner } = require('./response-parsers');
 
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
                           model: 'Course'
                         }
                     });
-            return learner;
+            return transformLearner(learner);
         }
         catch (err)
         {
