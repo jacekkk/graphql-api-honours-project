@@ -1,15 +1,28 @@
 const Course = require('../../models/course');
-const { transformCourse } = require('../resolvers/common')
+const { transformCourse } = require('./response-parsers')
 
 
 module.exports = {
+    course: async args => {
+        try
+        {
+            const course = await Course.findById(args.id);
+            return transformCourse(course);
+        }
+        catch (err)
+        {
+            throw err;
+        }
+    },
     courses: async () => {
         try
         {
-            const courses = await Course.find();
-            return courses.map(course => {
-                return transformCourse(course);
+            const courses = await Course.find().exec().then(docs => {
+                return docs.map(course => {
+                    return transformCourse(course);
+                });
             });
+            return courses;
         }
         catch (err)
         {
@@ -27,12 +40,10 @@ module.exports = {
             });
 
             const result = await course.save();
-            console.log(result);
             return transformCourse(result);
         }
         catch (err)
         {
-            console.log(err);
             throw err;
         }
     }
