@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
-const Learner = require('../../models/learner');
 const sort = require('../../helpers/sort');
+
+const Learner = require('../../models/learner');
 const { transformLearner } = require('./response-parsers');
 
 
@@ -8,7 +9,7 @@ module.exports = {
     learner: async args => {
         try
         {
-            learner = await Learner.findById(args.id).populate({
+            const learner = await Learner.findById(args.id).populate({
                         path: 'enrolments',
                         populate: {
                           path: 'course',
@@ -57,7 +58,9 @@ module.exports = {
 
             if(args.sort) sort(learners, args.sort);
 
-            return learners;
+            return learners.map(learner => {
+                return transformLearner(learner);
+            });
         }
         catch (err)
         {

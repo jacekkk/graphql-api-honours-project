@@ -17,12 +17,10 @@ module.exports = {
     courses: async () => {
         try
         {
-            const courses = await Course.find().exec().then(docs => {
-                return docs.map(course => {
-                    return transformCourse(course);
-                });
+            const courses = await Course.find();
+            return courses.map(course => {
+                return transformCourse(course);
             });
-            return courses;
         }
         catch (err)
         {
@@ -38,8 +36,8 @@ module.exports = {
                 date: new Date(args.courseInput.date),
                 location: args.courseInput.location
             });
-
             const result = await course.save();
+
             return transformCourse(result);
         }
         catch (err)

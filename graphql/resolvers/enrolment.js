@@ -8,7 +8,7 @@ module.exports = {
     enrolment: async args => {
         try
         {
-            enrolment = await Enrolment.findById(args.id).populate([{path: 'learner'}, {path: 'course'}]);
+            const enrolment = await Enrolment.findById(args.id).populate([{path: 'learner'}, {path: 'course'}]);
             return transformEnrolment(enrolment);     
         }
         catch (err)
@@ -18,13 +18,11 @@ module.exports = {
     },
     enrolments: async () => {
         try
-        {
-            const enrolments = await Enrolment.find().populate([{path: 'learner'}, {path: 'course'}]).exec().then(docs => {
-                return docs.map(enrolment => {
-                    return transformEnrolment(enrolment);
-                });
+        {            
+            const enrolments = await Enrolment.find().populate([{path: 'learner'}, {path: 'course'}]);
+            return enrolments.map(enrolment => {
+                return transformEnrolment(enrolment);
             });
-            return enrolments;
         }
         catch (err)
         {
@@ -45,7 +43,8 @@ module.exports = {
                 });
                 
                 const result = await enrolment.save();
-                await Learner.update({ _id: fetchedLearner._id }, { $push: { enrolments: result._id } });        
+                await Learner.update({ _id: fetchedLearner._id }, { $push: { enrolments: result._id } });
+                
                 return transformEnrolment(result);
             }
             else {
@@ -64,7 +63,7 @@ module.exports = {
             const enrolment = await Enrolment.findById(args.enrolmentId);
             await Enrolment.deleteOne({ _id: args.enrolmentId });
             await Learner.update({ _id: enrolment.learner }, { $pull: { enrolments: enrolment._id } });
-            return "Enrolment cancelled successfuly.";         
+            return "Enrolment cancelled successfully.";         
         }
         catch (err)
         {

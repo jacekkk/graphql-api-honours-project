@@ -13,6 +13,7 @@ const transformEnrolment = enrolment => {
     return {
         ...enrolment._doc,
         id: enrolment.id,
+        course: transformCourse(enrolment.course),
         createdAt: parseDate(enrolment.createdAt),
         updatedAt: parseDate(enrolment.updatedAt)
     };
@@ -20,21 +21,16 @@ const transformEnrolment = enrolment => {
 
 const transformEnrolments = enrolments => {
     return enrolments.map(enrolment => {
-        return {
-            ...enrolment._doc,
-            id: enrolment.id,
-            createdAt: parseDate(enrolment.createdAt),
-            updatedAt: parseDate(enrolment.updatedAt)
-        };
+        return transformEnrolment(enrolment);
     });
 };
 
 const transformLearner = learner => {
     return {
         ...learner._doc,
-        enrolments: transformEnrolments(learner.enrolments),
         id: learner.id,
         password: null,
+        enrolments: transformEnrolments(learner.enrolments)
     };
 };
 
