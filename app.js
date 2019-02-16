@@ -4,8 +4,8 @@ const graphqlHttp = require('express-graphql');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
-const fs = require('fs')
-const path = require('path')
+const fs = require('fs');
+const path = require('path');
 
 const graphQLSchema = require('./graphql/schema/index');
 const graphQLResolvers = require('./graphql/resolvers/index');
