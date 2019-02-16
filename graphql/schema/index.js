@@ -1,8 +1,9 @@
 const { buildSchema } = require('graphql');
 
+
 module.exports = buildSchema(`
 type Enrolment {
-    _id: ID!
+    id: ID!
     course: Course!
     learner: Learner!
     progress: Int
@@ -11,7 +12,7 @@ type Enrolment {
 }
 
 type Learner {
-    _id: ID!
+    id: ID!
     firstName: String!
     lastName: String!
     email: String!
@@ -21,7 +22,7 @@ type Learner {
 }
 
 type Course {
-    _id: ID!
+    id: ID!
     title: String!
     description: String!
     date: String!
@@ -71,8 +72,11 @@ enum Direction {
 }
 
 type RootQuery {
+    learner(id: ID): Learner!
     learners(filter: FilterInput, sort: SortInput): [Learner!]!
+    course(id: ID): Course!
     courses: [Course!]!
+    enrolment(id: ID): Enrolment!
     enrolments: [Enrolment!]!
 }
 
@@ -80,7 +84,7 @@ type RootMutation {
     createLearner(learnerInput: LearnerInput): Learner!
     createCourse(courseInput: CourseInput): Course!
     enrolLearner(enrolmentInput: EnrolmentInput): Enrolment!
-    cancelEnrolment(enrolmentId: ID!): Course!
+    cancelEnrolment(enrolmentId: ID!): String!
 }
 
 schema {

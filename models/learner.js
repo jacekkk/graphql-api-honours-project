@@ -28,7 +28,7 @@ const learnerSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Enrolment'
         }
-    ]
+    ],
 });
 
 module.exports = mongoose.model('Learner', learnerSchema);

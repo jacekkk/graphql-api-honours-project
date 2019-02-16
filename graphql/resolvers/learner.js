@@ -1,17 +1,60 @@
 const bcrypt = require('bcryptjs');
+const sort = require('../../helpers/sort');
+
 const Learner = require('../../models/learner');
-const { transformLearner } = require('../resolvers/common')
-const sort = require('../../helpers/sort')
-const filter = require('../../helpers/filter')
+const { transformLearner } = require('./response-parsers');
 
 
 module.exports = {
+    learner: async args => {
+        try
+        {
+            const learner = await Learner.findById(args.id).populate({
+                        path: 'enrolments',
+                        populate: {
+                          path: 'course',
+                          model: 'Course'
+                        }
+                    });
+            return transformLearner(learner);
+        }
+        catch (err)
+        {
+            throw err;
+        }
+    },
     learners: async args => {
         try
         {
             let learners = [];
 
-            args.filter ? learners = await filter(Learner, args.filter) : learners = await Learner.find();
+            if (args.filter && args.operator === "EQUALS") {
+                learners = await Learner.find({ [args.field]:[args.value] }).populate({
+                    path: 'enrolments',
+                    populate: {
+                      path: 'course',
+                      model: 'Course'
+                    }
+                });
+            }
+            else if (args.filter && args.operator === "CONTAINS") {
+                learners = await Learner.find({ [args.field]:{$regex:[args.value], $options: "i"} }).populate({
+                    path: 'enrolments',
+                    populate: {
+                      path: 'course',
+                      model: 'Course'
+                    }
+                });
+            }
+            else {
+                learners = await Learner.find().populate({
+                    path: 'enrolments',
+                    populate: {
+                      path: 'course',
+                      model: 'Course'
+                    }
+                });
+            }
 
             if(args.sort) sort(learners, args.sort);
 
@@ -28,10 +71,7 @@ module.exports = {
         try
         {
             const existingLearner = await Learner.findOne({ email: args.learnerInput.email });
-            if (existingLearner)
-            {
-                throw new Error('Learner already exists.');
-            }
+            if (existingLearner) throw new Error('Learner already exists.');
 
             const hashedPassword = await bcrypt.hash(args.learnerInput.password, 12);
             const learner = new Learner({
@@ -43,12 +83,10 @@ module.exports = {
             });
 
             const result = await learner.save();
-            console.log(result);
-            return transformLearner(result);
+            return result;
         }
         catch (err)
         {
-            console.log(err);
             throw err;
         }
     }

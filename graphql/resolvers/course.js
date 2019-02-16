@@ -1,8 +1,19 @@
 const Course = require('../../models/course');
-const { transformCourse } = require('../resolvers/common')
+const { transformCourse } = require('./response-parsers')
 
 
 module.exports = {
+    course: async args => {
+        try
+        {
+            const course = await Course.findById(args.id);
+            return transformCourse(course);
+        }
+        catch (err)
+        {
+            throw err;
+        }
+    },
     courses: async () => {
         try
         {
@@ -25,14 +36,12 @@ module.exports = {
                 date: new Date(args.courseInput.date),
                 location: args.courseInput.location
             });
-
             const result = await course.save();
-            console.log(result);
+
             return transformCourse(result);
         }
         catch (err)
         {
-            console.log(err);
             throw err;
         }
     }

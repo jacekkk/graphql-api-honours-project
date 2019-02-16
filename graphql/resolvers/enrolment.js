@@ -1,17 +1,26 @@
 const Learner = require('../../models/learner');
 const Course = require('../../models/course');
 const Enrolment = require('../../models/enrolment');
-const { transformCourse, transformEnrolment } = require('../resolvers/common')
+const { transformEnrolment } = require('./response-parsers')
 
 
 module.exports = {
-    enrolments: async () => {
+    enrolment: async args => {
         try
         {
-            const enrolments = await Enrolment.find();
-            return enrolments.map(enrolment =>
-            {
-                console.log(enrolment.course);
+            const enrolment = await Enrolment.findById(args.id).populate([{path: 'learner'}, {path: 'course'}]);
+            return transformEnrolment(enrolment);     
+        }
+        catch (err)
+        {
+            throw err;
+        }
+    },
+    enrolments: async () => {
+        try
+        {            
+            const enrolments = await Enrolment.find().populate([{path: 'learner'}, {path: 'course'}]);
+            return enrolments.map(enrolment => {
                 return transformEnrolment(enrolment);
             });
         }
@@ -26,30 +35,35 @@ module.exports = {
             const fetchedCourse = await Course.findById(args.enrolmentInput.courseId);
             const fetchedLearner = await Learner.findById(args.enrolmentInput.learnerId);
     
-            const enrolment = new Enrolment({
-                course: fetchedCourse,
-                learner: fetchedLearner,
-                progress: args.enrolmentInput.progress ? args.enrolmentInput.progress : 0
-            });
-            
-            const result = await enrolment.save();
-    
-            return transformEnrolment(result);
+            if(fetchedCourse && fetchedLearner) {
+                const enrolment = new Enrolment({
+                    course: fetchedCourse,
+                    learner: fetchedLearner,
+                    progress: args.enrolmentInput.progress
+                });
+                
+                const result = await enrolment.save();
+                await Learner.update({ _id: fetchedLearner._id }, { $push: { enrolments: result._id } });
+                
+                return transformEnrolment(result);
+            }
+            else {
+                throw new Error('Course and/or Learner not found');
+            }
+
         }
         catch(err)
         {
-            console.log(err);
             throw err;
         }
     },
     cancelEnrolment: async args => {
         try
         {
-            const enrolment = await Enrolment.findById(args.enrolmentId).populate('course');
-            const course = transformCourse(enrolment.course);
-            console.log(enrolment);
+            const enrolment = await Enrolment.findById(args.enrolmentId);
             await Enrolment.deleteOne({ _id: args.enrolmentId });
-            return course;         
+            await Learner.update({ _id: enrolment.learner }, { $pull: { enrolments: enrolment._id } });
+            return "Enrolment cancelled successfully.";         
         }
         catch (err)
         {
