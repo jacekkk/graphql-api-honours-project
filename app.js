@@ -12,10 +12,13 @@ const graphQLResolvers = require('./graphql/resolvers/index');
 
 const app = express();
 
+// disable caching to prevent 304 response
+app.disable('etag');
+
 // create a write stream (in append mode)
 const logStream = fs.createWriteStream(path.join(__dirname, 'requests.txt'), { flags: 'a' })
 
-// setup the logger
+// set up the logger
 app.use(morgan(':date[clf] :method :url :status :referrer :res[content-length] :response-time', { stream: logStream }));
 app.use(bodyParser.json());
 
